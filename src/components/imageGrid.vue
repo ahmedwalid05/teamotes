@@ -56,9 +56,14 @@ export default {
       localStorage.setItem(image.name, ++copyCount);
 
       const file = await fs.promises.readFile(image.path);
-      const buffer = await Buffer.from(file).toString("base64");
+      const buffer = await Buffer.from(file);
+      const resizedBuffer = await sharp(image.path).resize(20).toBuffer();
+      const blob = new Blob(resizedBuffer, { type: image.fileType } );
 
-      const blob = this.b64ToBlob(buffer, image.fileType, 512);
+      console.log(blob)
+
+      //const blob = this.b64ToBlob(stuff, image.fileType, 512);
+      //const blob = new Blob(stuff, { type: image.mimeType });
 
       setTimeout(() => {
         image.isCopying = false;
@@ -67,7 +72,9 @@ export default {
       // TODO get dynamic file type
       // for some reason image/jpg and image/jpeg cause an error "NotAllowedError ..."
       await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
+        new ClipboardItem({
+          [blob.type]: blob
+        })
       ]);
     },
     async loadImages() {
